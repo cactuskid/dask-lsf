@@ -9,7 +9,6 @@ from distributed.utils import get_ip_interface
 from .core import JobQueueCluster
 
 logger = logging.getLogger(__name__)
-
 dirname = os.path.dirname(sys.executable)
 
 
