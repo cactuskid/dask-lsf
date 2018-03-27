@@ -7,7 +7,6 @@ from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
 from pangeo import LSFcluster
 
-
 def test_basic(loop):
     with PBSCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',
                     interface='ib0', loop=loop) as cluster:
