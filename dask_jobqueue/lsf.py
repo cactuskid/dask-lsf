@@ -12,19 +12,15 @@ logger = logging.getLogger(__name__)
 
 dirname = os.path.dirname(sys.executable)
 
-
 class LSFCluster(JobQueueCluster):
 	""" Launch Dask on a LSF cluster
 
 	Parameters
 	----------
 	name : str
-		Name of worker jobs. Passed to `$LSF -N` option.
+		Name of worker jobs. 
 	queue : str
-		Destination queue for each worker job. Passed to `#LSF -q` option.
-	project : str
-		Accounting string associated with each worker job. Passed to
-		`#LSF -A` option.
+		Destination queue for each worker job. 
 	threads_per_worker : int
 		Number of threads per process.
 	processes : int
@@ -44,7 +40,7 @@ class LSFCluster(JobQueueCluster):
 	extra : str
 		Additional arguments to pass to `dask-worker`
 	load : str
-		Additional arguments to pass to add to bash script template for loading modules etc
+		Additional arguments to pass to add to bash script template for loading modules, pyenv etc
 	kwargs : dict
 		Additional keyword arguments to pass to `LocalCluster`
 
@@ -66,7 +62,7 @@ class LSFCluster(JobQueueCluster):
 	def __init__(self,
 				name='dask-server',
 				queue='normal',
-				resource_spec='select=1:ncpus=36:mem=109GB',
+				resource_spec={},
 				threads_per_worker=4,
 				processes=10,
 				memory='7000',
@@ -87,12 +83,13 @@ class LSFCluster(JobQueueCluster):
 		#BSUB -J %(name)s
 		#BSUB -q %(queue)s
 		#BSUB -W %(walltime)s
+		#BSUB -n %(processors)s
 
 		%(load)s
 
 		dask-worker %(scheduler)s \
 			--nthreads %(threads_per_worker)d \
-			--nprocs %(processes)s \
+			--nprocs %(processors)s \
 			--memory-limit %(memory)s \
 			--name %(name)s-%(n)d \
 			--death-timeout %(death_timeout)s \
