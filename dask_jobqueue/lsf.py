@@ -5,8 +5,8 @@ import sys
 
 from distributed import LocalCluster
 from distributed.utils import get_ip_interface
-
-from core import JobQueueCluster
+import functools
+from .core import JobQueueCluster
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +59,10 @@ class LSFCluster(JobQueueCluster):
 	"""
 
 	def __init__(self,
-				name='dask-server',
+				name='daskServer',
 				queue='normal',
 				threads_per_worker=4,
-				processes=10,
+				processes=4,
 				memory='7000',
 				memkill = '7000000',
 				walltime='300',
@@ -70,14 +70,14 @@ class LSFCluster(JobQueueCluster):
 				death_timeout=60,
 				extra='',
 				load='pyenv activate myenv',
-
+				processors = 4,
 				**kwargs):
 
 		self._template = """
 		#!/bin/bash
 
 		#BSUB -M %(memkill)s
-		#BSUB -R %(memrequired)s
+		#BSUB -R %(memory)s
 		#BSUB -J %(name)s
 		#BSUB -q %(queue)s
 		#BSUB -W %(walltime)s
@@ -86,10 +86,10 @@ class LSFCluster(JobQueueCluster):
 		%(load)s
 
 		dask-worker %(scheduler)s \
-			--nthreads %(threads_per_worker)d \
+			--nthreads %(threads_per_worker)s \
 			--nprocs %(processors)s \
 			--memory-limit %(memory)s \
-			--name %(name)s-%(n)d \
+			--name %(name)s-%(n)s \
 			--death-timeout %(death_timeout)s \
 			 %(extra)s
 		""".lstrip()
@@ -110,15 +110,20 @@ class LSFCluster(JobQueueCluster):
 						'processes': processes,
 						'walltime': walltime,
 						'scheduler': self.scheduler.address,
-						'resource_spec': resource_spec,
 						'base_path': dirname,
-						'memory': str(int(memory/1000)) +'GB',
+						'memory': str(int( int(memory)/1000)) +'GB',
+						'memkill': memkill,
 						'death_timeout': death_timeout,
-						'extra': extra}
+						'extra': extra,
+						'load':load,
+						'processors':processors
+
+						}
 		self.jobs = dict()
 		self.n = 0
 		self._adaptive = None
 		self._submitcmd = 'bsub'
 		self._cancelcmd = 'bkill'
+		self.jobfile = functools.partial( self.job_file , named = True )
 
 		logger.debug("Job script: \n %s" % self.job_script())

@@ -5,7 +5,7 @@ import pytest
 
 from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
-from pangeo import PBSCluster
+from dask_jobqueue.pbs import PBSCluster
 
 
 def test_basic(loop):

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import logging
 import subprocess
 import toolz
+from tempfile import NamedTemporaryFile
 
 from distributed.utils import tmpfile, ignoring
 
@@ -27,13 +28,13 @@ class JobQueueCluster(object):
         return self._template % toolz.merge(self.config, {'n': self.n})
 
     @contextmanager
-    def job_file(self):
+    def job_file(self, named = False):
         """ Write job submission script to temporary file """
-        with tmpfile(extension='sh') as fn:
+        with tmpfile(extension='sh', dir='./') as fn:
             with open(fn, 'w') as f:
                 f.write(self.job_script())
             yield fn
-
+        
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
         workers = []

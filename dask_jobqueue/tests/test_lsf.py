@@ -3,18 +3,17 @@ from time import time, sleep
 
 import pytest
 
-from dask.distributed import Client
+from distributed import Client
 from distributed.utils_test import loop  # noqa: F401
-import LSFcluster
+from dask_jobqueue.lsf import LSFCluster
 
 def test_basic(loop):
-    with LSFcluster(name='dask-test',
+    with LSFCluster(name='daskTest',
                 queue='normal',
-                resource_spec={},
                 extra='',
                 load='pyenv activate myenv'
                 ) as cluster:
-    
+
         with Client(cluster) as client:
             workers = cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
@@ -37,7 +36,11 @@ def test_basic(loop):
 
 
 def test_adaptive(loop):
-    with LSFcluster(walltime='00:02:00', loop=loop) as cluster:
+    with LSFCluster(name='daskTest',
+                queue='normal',
+                extra='',
+                load='pyenv activate myenv',
+                loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
