@@ -61,7 +61,6 @@ class LSFCluster(JobQueueCluster):
 	def __init__(self,
 				name='dask-server',
 				queue='normal',
-				resource_spec={},
 				threads_per_worker=4,
 				processes=10,
 				memory='7000',
@@ -107,7 +106,6 @@ class LSFCluster(JobQueueCluster):
 		
 		self.config = {'name': name,
 						'queue': queue,
-						'project': project,
 						'threads_per_worker': threads_per_worker,
 						'processes': processes,
 						'walltime': walltime,
