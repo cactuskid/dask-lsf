@@ -6,7 +6,7 @@ import sys
 from distributed import LocalCluster
 from distributed.utils import get_ip_interface
 
-from .core import JobQueueCluster
+from core import JobQueueCluster
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,7 @@ class LSFCluster(JobQueueCluster):
 	processes : int
 		Number of processes per node.
 	memory : str
-		Bytes of memory that the worker can use. This should be a string
-		like "7GB" that can be interpretted both by LSF and Dask.
+		Bytes of memory that the worker can use. LSF and Dask use different annotations for memory usage
 	resource_spec : str
 		Request resources and specify job placement. Passed to `#LSF -l`
 		option.
@@ -115,7 +114,7 @@ class LSFCluster(JobQueueCluster):
 						'scheduler': self.scheduler.address,
 						'resource_spec': resource_spec,
 						'base_path': dirname,
-						'memory': str(memory/1000)+'GB',
+						'memory': str(int(memory/1000)) +'GB',
 						'death_timeout': death_timeout,
 						'extra': extra}
 		self.jobs = dict()

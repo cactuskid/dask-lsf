@@ -5,11 +5,16 @@ import pytest
 
 from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
-from pangeo import LSFcluster
+import LSFcluster
 
 def test_basic(loop):
-    with PBSCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',
-                    interface='ib0', loop=loop) as cluster:
+    with LSFcluster(name='dask-test',
+                queue='normal',
+                resource_spec={},
+                extra='',
+                load='pyenv activate myenv'
+                ) as cluster:
+    
         with Client(cluster) as client:
             workers = cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
@@ -32,7 +37,7 @@ def test_basic(loop):
 
 
 def test_adaptive(loop):
-    with PBSCluster(walltime='00:02:00', loop=loop) as cluster:
+    with LSFcluster(walltime='00:02:00', loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
@@ -57,10 +62,3 @@ def test_adaptive(loop):
                 sleep(0.100)
                 assert time() < start + 10
 
-
-@pytest.mark.skipif('PBS_ACCOUNT' in os.environ, reason='PBS_ACCOUNT defined')
-def test_errors(loop):
-    with pytest.raises(ValueError) as info:
-        PBSCluster()
-
-    assert 'project=' in str(info.value)
